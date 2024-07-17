@@ -11,8 +11,11 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environmnent:
+      CI: false
+
     steps:
-    - id: build-publish
-      uses: bitovi/github-actions-react-to-github-pages@v1.2.4
-      with:
-        path: build
+      - id: build-publish
+        uses: bitovi/github-actions-react-to-github-pages@v1.2.4
+        with:
+          path: build
