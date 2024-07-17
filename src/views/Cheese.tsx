@@ -739,7 +739,7 @@ export default function Cheese() {
           break;
       }
     })
-    SceneLoader.ImportMesh(null, '/assets/', 'cheese.glb', scene, () => {
+    SceneLoader.ImportMesh(null, '/tools/assets/', 'cheese.glb', scene, () => {
       for (let i = 1; i < 17; i++) {
         let node = scene.getNodeById(i.toString()) as TransformNode
         if (node) {
