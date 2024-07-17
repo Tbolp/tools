@@ -32,9 +32,9 @@ function createRoutes(routes: any[][]) {
 }
 
 const routes_info = [
-  ["/cheese", "CHEESE", Cheese],
-  ["/player", "PLAYER", Player],
-  ["/viewer", "VIEWER", Viewer],
+  ["tools/cheese", "CHEESE", Cheese],
+  ["tools/player", "PLAYER", Player],
+  ["tools/viewer", "VIEWER", Viewer],
 ]
 
 function App() {
