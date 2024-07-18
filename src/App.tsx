@@ -10,6 +10,7 @@ const Share = lazy(() => import('./views/Share'));
 const Player = lazy(() => import('./views/Player'));
 const Viewer = lazy(() => import('./views/Viewer'));
 const Cheese = lazy(() => import('./views/Cheese'))
+const Julia = lazy(() => import('./views/Julia'))
 const ImageEffect = lazy(() => import('./views/ImageEffect'))
 
 function createRoutes(routes: any[][]) {
@@ -35,6 +36,7 @@ const routes_info = [
   ["tools/cheese", "CHEESE", Cheese],
   ["tools/player", "PLAYER", Player],
   ["tools/viewer", "VIEWER", Viewer],
+  ["tools/julia", "JULIA", Julia],
 ]
 
 function App() {
