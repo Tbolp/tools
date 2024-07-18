@@ -1,7 +1,7 @@
 import { Container } from "@mui/material";
 import { useEffect, useRef } from "react"
 
-export default function (props: { data: AudioBuffer | null, progress?: number, onProgress?: (value: number) => void }) {
+export default function TWave(props: { data: AudioBuffer | null, progress?: number, onProgress?: (value: number) => void }) {
   let canvas_ref = useRef<HTMLCanvasElement>(null);
   let canvas1_ref = useRef<HTMLCanvasElement>(null);
 
