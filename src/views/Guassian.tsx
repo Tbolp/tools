@@ -81,7 +81,7 @@ function initGL(gl: WebGL2RenderingContext) {
   return tex;
 }
 
-export default function () {
+export default function Guassian() {
   let canvas_ref = useRef<HTMLCanvasElement | null>(null)
   let [width, set_width] = useState(0)
   let [height, set_height] = useState(0)
