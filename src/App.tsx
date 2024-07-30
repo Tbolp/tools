@@ -6,11 +6,13 @@ import { MenuOutlined, AccountBalanceOutlined } from '@mui/icons-material'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Test from './views/Test';
 import OpenGL from './views/OpenGL';
+import Guassian from './views/Guassian';
 const Share = lazy(() => import('./views/Share'));
 const Player = lazy(() => import('./views/Player'));
 const Viewer = lazy(() => import('./views/Viewer'));
 const Cheese = lazy(() => import('./views/Cheese'))
 const Julia = lazy(() => import('./views/Julia'))
+const Mandelbrot = lazy(() => import('./views/Mandelbrot'))
 const ImageEffect = lazy(() => import('./views/ImageEffect'))
 
 function createRoutes(routes: any[][]) {
@@ -37,6 +39,7 @@ const routes_info = [
   ["tools/player", "PLAYER", Player],
   ["tools/viewer", "VIEWER", Viewer],
   ["tools/julia", "JULIA", Julia],
+  ["tools/mandelbrot", "MANDELBROT", Mandelbrot]
 ]
 
 function App() {

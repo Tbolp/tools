@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Button, Container, Stack } from "@mui/material";
 import { useEffect, useRef } from "react";
 
 class RenderBuilder {
@@ -90,6 +90,7 @@ class Render {
 
 export default function Mandelbrot() {
   let canvas_ref = useRef<HTMLCanvasElement | null>(null)
+  let render_ref = useRef<Render | null>(null)
   useEffect(() => {
     let build = new RenderBuilder()
     build.gl = canvas_ref.current?.getContext('webgl2')!
@@ -111,9 +112,9 @@ export default function Mandelbrot() {
     
     vec3 calc(complex pt) {
       complex z = complex(0.0, 0.0);
-      vec3 color1 = vec3(0.8, 0.8, 0.0);
-      vec3 color2 = vec3(0.1, 0.1, 0.1);
-      int count = 1000;
+      vec3 color1 = vec3(1.0, 1.0, 0.66);
+      vec3 color2 = vec3(0.05, 0.05, 0.0);
+      int count = 10000;
       for (int i = 0; i < count; ++i) {
         z = multi(z, z) + pt;
         if (norm(z) > 2.0) {
@@ -121,23 +122,24 @@ export default function Mandelbrot() {
           return color1*s+color2*(1.0-s);
         }
       }
-      return color1;
+      float s = norm(z) / 2.0;
+      return color1*(1.0-s)+color2*s;
     }
     
     void main() {
       fragColor = vec4(calc(vec3(_pos, 1.0)*tran), 1.0);
     }
     `
-    let transfrom = new DOMMatrix
-    transfrom.scaleSelf(600 / 400, 1)
-    console.log(transfrom)
+    let transfrom = new DOMMatrix()
+    transfrom.scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
     let render = build.build()
+    render_ref.current = render
     render.transform = transfrom
     render.render()
     canvas_ref.current!.onwheel = (ev) => {
-      console.log(ev)
-      let x = ev.offsetX / 600 * 2 - 1
-      let y = ev.offsetY / 400 * 2 - 1
+      console.log(ev.offsetX, ev.offsetY, ev)
+      let x = ev.offsetX / canvas_ref.current!.width * 2 - 1
+      let y = ev.offsetY / canvas_ref.current!.height * 2 - 1
       transfrom.translateSelf(x, -y)
       if (ev.deltaY < 0) {
         transfrom.scaleSelf(0.9, 0.9)
@@ -147,25 +149,25 @@ export default function Mandelbrot() {
       transfrom.translateSelf(-x, y)
       render.transform = transfrom
       render.render()
+      return false
     }
     let first_pos = [-100, -1]
     canvas_ref.current!.onmousemove = (ev) => {
-      if (ev.buttons == 1) {
-        if (first_pos[0] == -100) {
+      if (ev.buttons === 1) {
+        if (first_pos[0] === -100) {
           first_pos[0] = ev.offsetX
           first_pos[1] = ev.offsetY
         } else {
-          let x = (ev.offsetX - first_pos[0]) / 600 * 2
-          let y = (ev.offsetY - first_pos[1]) / 400 * 2
+          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.width * 2
+          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.height * 2
           render.transform = transfrom.translate(-x, y)
           render.render()
         }
       } else {
-        if (first_pos[0] != -100) {
-          let x = (ev.offsetX - first_pos[0]) / 600 * 2
-          let y = (ev.offsetY - first_pos[1]) / 400 * 2
+        if (first_pos[0] !== -100) {
+          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.width * 2
+          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.height * 2
           transfrom.translateSelf(-x, y)
-          console.log(transfrom)
           render.transform = transfrom
           render.render()
         }
@@ -175,9 +177,17 @@ export default function Mandelbrot() {
   })
 
   return (
-    <Container>
-      <canvas ref={canvas_ref} width={600} height={400} />
-    </Container>
+    <Stack textAlign='center'>
+      <Container>
+        <canvas ref={canvas_ref} width={600} height={400} />
+      </Container>
+      <Button onClick={() => {
+        if (render_ref.current) {
+          render_ref.current.transform = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
+          render_ref.current.render()
+        }
+      }}>Reset</Button>
+    </Stack>
   )
 
 }
