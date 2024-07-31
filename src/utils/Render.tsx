@@ -94,4 +94,8 @@ export class Render {
   get program() {
     return this.prog
   }
+
+  get context() {
+    return this.gl
+  }
 }
