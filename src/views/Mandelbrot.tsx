@@ -6,6 +6,7 @@ import { Render, RenderBuilder } from "../utils/Render";
 export default function Mandelbrot() {
   let canvas_ref = useRef<HTMLCanvasElement | null>(null)
   let render_ref = useRef<Render | null>(null)
+  let transform_ref = useRef<DOMMatrix>(new DOMMatrix())
   useEffect(() => {
     let build = new RenderBuilder()
     build.gl = canvas_ref.current?.getContext('webgl2')!
@@ -46,6 +47,7 @@ export default function Mandelbrot() {
     }
     `
     let transfrom = new DOMMatrix()
+    transform_ref.current = transfrom
     transfrom.scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
     let render = build.build()
     render_ref.current = render
@@ -55,6 +57,7 @@ export default function Mandelbrot() {
       console.log(ev.offsetX, ev.offsetY, ev)
       let x = ev.offsetX / canvas_ref.current!.width * 2 - 1
       let y = ev.offsetY / canvas_ref.current!.height * 2 - 1
+      let transfrom = transform_ref.current
       transfrom.translateSelf(x, -y)
       if (ev.deltaY < 0) {
         transfrom.scaleSelf(0.9, 0.9)
@@ -68,6 +71,7 @@ export default function Mandelbrot() {
     }
     let first_pos = [-100, -1]
     canvas_ref.current!.onmousemove = (ev) => {
+      let transfrom = transform_ref.current
       if (ev.buttons === 1) {
         if (first_pos[0] === -100) {
           first_pos[0] = ev.offsetX
@@ -98,7 +102,8 @@ export default function Mandelbrot() {
       </Container>
       <Button onClick={() => {
         if (render_ref.current) {
-          render_ref.current.transform = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
+          transform_ref.current = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
+          render_ref.current.transform = transform_ref.current
           render_ref.current.render()
         }
       }}>Reset</Button>
