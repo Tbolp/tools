@@ -45,13 +45,16 @@ class Person {
       })
       .build('stand')
     this._fsm2 = new FSMBuilder()
-      .registerState('stand', () => {
+      .registerState('normal', () => {
         return {
           onA: () => {
             this.vec[0] = -150
           },
           onD: () => {
             this.vec[0] = 150
+          },
+          onL: () => {
+            return 'run'
           },
           onUD: () => {
             if (this.vec[0] > 0) {
@@ -65,7 +68,35 @@ class Person {
           },
         } as State
       })
-      .build('stand')
+      .registerState('run', () => {
+        let tmp_vec = 0
+        return {
+          onEnter: () => {
+            tmp_vec = this.vec[0]
+            this.vec[0] *= 4
+            setTimeout(() => {
+              this.onEvent('END')
+            }, 100)
+          },
+          onExit: () => {
+            this.vec[0] = tmp_vec
+          },
+          onUD: () => {
+            if (this.vec[0] > 0) {
+              tmp_vec = 0
+            }
+          },
+          onUA: () => {
+            if (this.vec[0] < 0) {
+              tmp_vec = 0
+            }
+          },
+          onEND: () => {
+            return 'normal'
+          }
+        }
+      })
+      .build('normal')
   }
   onEvent(key: string) {
     this._fsm.onEvent({ name: key.toUpperCase(), data: null })
