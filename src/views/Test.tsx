@@ -25,12 +25,22 @@ class Person {
             this.vec[1] = 150
             this.acc[1] = -600
           },
+          onK: () => {
+            return 'djump'
+          },
           onSTAND: () => {
             return 'stand'
           },
-          onD: () => {
-            this.vec[0] = 100
-          }
+        }
+      })
+      .registerState('djump', () => {
+        return {
+          onEnter: () => {
+            this.vec[1] = 150
+          },
+          onSTAND: () => {
+            return 'stand'
+          },
         }
       })
       .build('stand')
