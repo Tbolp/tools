@@ -1,115 +1,101 @@
-import { Container } from "@mui/material";
 import { useEffect, useRef } from "react";
-
-class Loop {
-  private elt: HTMLCanvasElement | null = null
-  private count = 0
-  private pre = 0
-  private pos = {
-    x: 0,
-    y: 0
+import { FSM, FSMBuilder, State } from "../utils/FSM";
+class Person {
+  private _fsm: FSM
+  private _fsm2: FSM
+  public pos = [0, 0]
+  public vec = [0, 0]
+  public acc = [0, 0]
+  constructor() {
+    this._fsm = new FSMBuilder()
+      .registerState('stand', () => {
+        return {
+          onEnter: () => {
+            this.vec[1] = 0
+            this.acc[1] = 0
+          },
+          onK: () => {
+            return 'jump'
+          }
+        } as State
+      })
+      .registerState('jump', () => {
+        return {
+          onEnter: () => {
+            this.vec[1] = 150
+            this.acc[1] = -600
+          },
+          onSTAND: () => {
+            return 'stand'
+          },
+          onD: () => {
+            this.vec[0] = 100
+          }
+        }
+      })
+      .build('stand')
+    this._fsm2 = new FSMBuilder()
+      .registerState('stand', () => {
+        return {
+          onA: () => {
+            this.vec[0] = -150
+          },
+          onD: () => {
+            this.vec[0] = 150
+          },
+          onUD: () => {
+            if (this.vec[0] > 0) {
+              this.vec[0] = 0
+            }
+          },
+          onUA: () => {
+            if (this.vec[0] < 0) {
+              this.vec[0] = 0
+            }
+          },
+        } as State
+      })
+      .build('stand')
   }
-  private speed = 20
-  start(elt: HTMLCanvasElement) {
-    this.elt = elt
-    this.count = requestAnimationFrame(this.render.bind(this))
-  }
-  render(ts: DOMHighResTimeStamp) {
-    if (this.pre === 0) {
-      this.pre = ts
-    }
-    let detla = ts - this.pre
-    if (detla > 30) {
-      detla = 30
-    }
-    let ctx = this.elt?.getContext('2d')!
-    ctx.clearRect(0, 0, 600, 400)
-    ctx.save()
-    ctx.translate(0, 400)
-    ctx.scale(1, -1)
-    ctx.fillStyle = 'red'
-    this.pos.x += detla / 1000 * 200
-    this.pos.x = this.pos.x % 600
-    this.pos.y += detla / 100 * this.speed
-    if (this.pos.y > 100) {
-      this.pos.y = 100
-      this.speed = -this.speed
-    }
-    if (this.pos.y < 0) {
-      this.pos.y = 0
-      this.speed = -this.speed
-    }
-    ctx.beginPath()
-    ctx.ellipse(this.pos.x, this.pos.y + 100, 100, 100, 0, 0, Math.PI * 2)
-    ctx.closePath()
-    ctx.fill()
-    ctx.restore()
-    this.count = requestAnimationFrame(this.render.bind(this))
-    this.pre = ts
-  }
-  stop() {
-    console.log('stop')
-    cancelAnimationFrame(this.count)
-  }
-}
-
-
-class Engine {
-  private _handle: number = 0
-  private _ctx: CanvasRenderingContext2D | null = null
-  public set ctx(v: CanvasRenderingContext2D) {
-    this._ctx = v;
-  }
-  public render(fn: null | ((ctx: CanvasRenderingContext2D, ts: DOMHighResTimeStamp) => void)) {
-    cancelAnimationFrame(this._handle)
-    if (fn == null) {
-      return
-    }
-    let f = (ts: DOMHighResTimeStamp) => {
-      fn(this._ctx!, ts)
-      this._handle = requestAnimationFrame(f)
-    }
-    this._handle = requestAnimationFrame(f)
+  onEvent(key: string) {
+    this._fsm.onEvent({ name: key.toUpperCase(), data: null })
+    this._fsm2.onEvent({ name: key.toUpperCase(), data: null })
   }
 }
 
-
-export default function () {
+export default function Test() {
   let elt = useRef<HTMLCanvasElement>(null)
-  let engine = useRef(new Engine)
   useEffect(() => {
-    engine.current.ctx = elt.current!.getContext('2d')!
-    let first = true
-    let start_ts = 0
-    let y = 0
-    let x = 0
-    engine.current.render((ctx, ts) => {
-      ctx.clearRect(0, 0, 10000, 1000)
-      ctx.fillStyle = 'red'
-      ctx.fillRect(x, y * 10, 5, 20)
-      if (first) {
-        start_ts = ts
-        first = false
-        return
-      }
-      let dt = (ts - start_ts) / 1000
-      // x = dt * 10
-      y = 4 * dt - 0.5 * 9.8 * dt * dt
-      if (y > 200) {
-        y = 200
-      }
-      if (y < 0) {
-        start_ts = ts
-        y = 0
-      }
+    let person = new Person()
+    elt.current!.addEventListener('keydown', (evt) => {
+      person.onEvent(evt.key)
     })
-    return () => {
-      engine.current.render(null)
+    elt.current!.onkeyup = (evt) => {
+      person.onEvent(`U${evt.key}`)
     }
-  }, [])
+    let ctx = elt.current!.getContext('2d')!
+    let previous_ts = Date.now()
+    let render = (ts: DOMHighResTimeStamp) => {
+      let dt = (Date.now() - previous_ts) / 1000
+      previous_ts = Date.now()
+      person.vec[1] += person.acc[1] * dt
+      person.pos[0] += person.vec[0] * dt
+      person.pos[1] += person.vec[1] * dt
+      if (person.pos[1] < 0) {
+        person.pos[1] = 0
+        person.onEvent('STAND')
+      }
+      ctx.clearRect(0, 0, 1000, 1000)
+      ctx.save()
+      ctx.translate(0, 400)
+      ctx.scale(1, -1)
+      ctx.fillRect(person.pos[0], person.pos[1], 10, 20)
+      ctx.restore()
+      requestAnimationFrame(render)
+    }
+    requestAnimationFrame(render)
+  })
   return (
-    <Container>
-      <canvas ref={elt} width={600} height={400} />
-    </Container>
+    <canvas tabIndex={1} width={400} height={400} ref={elt} />
   )
 }
