@@ -3,17 +3,16 @@ import { useState, Suspense, lazy } from 'react'
 import './App.css';
 import { AppBar, Container, Drawer, IconButton, Toolbar, Typography, Box, List, LinkProps, ListItemButton, ListItemText, Divider, ListItemIcon, Button } from '@mui/material';
 import { MenuOutlined, AccountBalanceOutlined } from '@mui/icons-material'
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import Test from './views/Test';
-import OpenGL from './views/OpenGL';
-const Share = lazy(() => import('./views/Share'));
-const Player = lazy(() => import('./views/Player'));
-const Viewer = lazy(() => import('./views/Viewer'));
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import Besizer from './views/Besizer'
+const Player = lazy(() => import('./views/Player'))
+const Viewer = lazy(() => import('./views/Viewer'))
 const Cheese = lazy(() => import('./views/Cheese'))
 const Julia = lazy(() => import('./views/Julia'))
 const Mandelbrot = lazy(() => import('./views/Mandelbrot'))
 const Gaussian = lazy(() => import('./views/Gaussian'))
 const ImageEffect = lazy(() => import('./views/ImageEffect'))
+const Piano = lazy(() => import('./views/Piano'))
 
 function createRoutes(routes: any[][]) {
   let elts_1 = []
@@ -41,6 +40,8 @@ const routes_info = [
   ["tools/julia", "JULIA", Julia],
   ["tools/mandelbrot", "MANDELBROT", Mandelbrot],
   ["tools/gaussian", "GAUSSIAN", Gaussian],
+  // ["tools/besizer", "BESIZER", Besizer],
+  ["tools/piano", "PIANO", Piano],
 ]
 
 function App() {
