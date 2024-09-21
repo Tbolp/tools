@@ -4,7 +4,6 @@ import './App.css';
 import { AppBar, Container, Drawer, IconButton, Toolbar, Typography, Box, List, LinkProps, ListItemButton, ListItemText, Divider, ListItemIcon, Button } from '@mui/material';
 import { MenuOutlined, AccountBalanceOutlined } from '@mui/icons-material'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import Besizer from './views/Besizer'
 const Player = lazy(() => import('./views/Player'))
 const Viewer = lazy(() => import('./views/Viewer'))
 const Cheese = lazy(() => import('./views/Cheese'))
