@@ -57,15 +57,15 @@ export default function Player() {
   return (
     <Container>
       <Grid sx={{ mb: '1em', mt: '1em' }}>
-        <TUpLoad disabled={playing} onChange={async (e) => {
+        <TUpLoad onFile={async (file) => {
           if (playing) {
             return;
           }
           let fmt = 1;
-          if (e.target.files![0].type == "") {
+          if (file.type == "") {
             fmt = 0;
           }
-          context.current.file_buf = await e.target.files![0].arrayBuffer()
+          context.current.file_buf = await file.arrayBuffer()
           let ctx = context.current;
           if (!ctx.audio_ctx) {
             ctx.audio_ctx = new AudioContext;

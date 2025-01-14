@@ -15,29 +15,34 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
-
-}
-
-export default function (props: { onChange?: ChangeEventHandler<HTMLInputElement> } & InputProps) {
+export default function TUpload(props: { onFile?: (file: File) => Promise<void> | void, accept?: string }) {
   let [name, set_name] = useState('')
-  let input_props: InputProps = props
   return (
     <Grid container sx={{ width: "100%" }} alignItems={'center'} spacing={2}>
-      <Grid xs>
-        <Button component="label" variant="contained" startIcon={<CloudUploadOutlined />}>
-          Upload file
-          <VisuallyHiddenInput type="file" {...input_props} onChange={(e) => {
-            if (e.target.files && e.target.files.length == 1) {
+      <Grid xs={12}>
+        <Button sx={{
+          width: "100%",
+          height: '15em'
+        }} component="label" variant="contained"
+          startIcon={<CloudUploadOutlined />}
+          onDragOver={(e) => { e.preventDefault() }}
+          onDrop={(e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files.length === 1) {
+              set_name(e.dataTransfer.files[0].name)
+              props.onFile?.(e.dataTransfer.files[0])
+            }
+            e.preventDefault()
+          }}>
+          Drag Or Click To Upload file
+          <VisuallyHiddenInput type="file" {...props} onChange={(e) => {
+            if (e.target.files && e.target.files.length === 1) {
               set_name(e.target.files[0].name)
-              if (props.onChange) {
-                props.onChange(e)
-              }
+              props.onFile?.(e.target.files[0])
             }
           }} />
         </Button>
       </Grid>
-      <Grid xs="auto">
+      <Grid xs={12}>
         <Typography>{name}</Typography>
       </Grid>
     </Grid>

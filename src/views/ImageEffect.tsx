@@ -116,17 +116,16 @@ export function convert2(c1: HTMLCanvasElement, c2: HTMLCanvasElement) {
   ctx2.putImageData(image_data2, 0, 0)
 }
 
-export default function () {
+export default function ImageEffect() {
   let canvas_ref = useRef<HTMLCanvasElement>(null)
   let canvas2_ref = useRef<HTMLCanvasElement>(null)
   return (
     <Container>
-      <TUpload onChange={async (e) => {
-        let file = e.target.files![0]
+      <TUpload onFile={async (file) => {
         let blob = new Blob([await file.arrayBuffer()], {
           type: file.type
         })
-        let img = new Image
+        let img = new Image()
         img.onload = () => {
           let c1 = canvas_ref.current!
           let ctx1 = c1.getContext('2d')

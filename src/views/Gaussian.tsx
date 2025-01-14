@@ -41,8 +41,7 @@ export default function Gaussian() {
   let param_ref = useRef([10, 4.5])
   return (
     <Container sx={{ mb: '1em', mt: '1em' }}>
-      <TUpload onChange={async (e) => {
-        let file = e.target.files![0]
+      <TUpload onFile={async (file) => {
         let blob = new Blob([await file.arrayBuffer()], {
           type: file.type
         })

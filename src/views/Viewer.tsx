@@ -177,11 +177,11 @@ export default function Viewer() {
   }, [format, width, buf])
   return (
     <Container sx={{ mb: '1em', mt: '1em' }} >
-      <TUpload onChange={async (e) => {
-        if (e.target.files![0].type !== "") {
+      <TUpload onFile={async (file) => {
+        if (file.type !== "") {
           set_format(FORMAT_IMG)
         } else {
-          let name = e.target.files![0].name
+          let name = file.name
           if (name.endsWith('rgb')) {
             set_format(FORMAT_RGB)
           } else if (name.endsWith('bgr')) {
@@ -196,7 +196,7 @@ export default function Viewer() {
             set_format(FORMAT_RGB)
           }
         }
-        set_buf(await e.target.files![0].arrayBuffer())
+        set_buf(await file.arrayBuffer())
       }} />
       <TSelect text="Format" select_props={{
         value: format,
