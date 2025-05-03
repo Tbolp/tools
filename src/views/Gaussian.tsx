@@ -2,6 +2,7 @@ import { Container, Slider, Stack } from "@mui/material";
 import TUpload from "../components/TUpload";
 import { useEffect, useRef, useState } from "react";
 import { Render, RenderBuilder } from "../utils/Render";
+import Markdown from "react-markdown";
 
 
 function create_kernel(radius: number, sigma: number) {
@@ -41,6 +42,7 @@ export default function Gaussian() {
   let param_ref = useRef([10, 4.5])
   return (
     <Container sx={{ mb: '1em', mt: '1em' }}>
+      <Markdown>{desp}</Markdown>
       <TUpload onFile={async (file) => {
         let blob = new Blob([await file.arrayBuffer()], {
           type: file.type
@@ -120,3 +122,8 @@ export default function Gaussian() {
     </Container>
   )
 }
+
+let desp = `
+# 对图片进行Guassian模糊
+- Radius 模糊半径,单位为像素
+- Sigma 模糊因子`

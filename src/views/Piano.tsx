@@ -1,6 +1,7 @@
-import { Button, Container } from "@mui/material";
+import { Button, Container, Typography } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { FSM, FSMBuilder } from "../utils/FSM";
+import Markdown from "react-markdown";
 
 function create_buf(ctx: AudioContext, fre: number, dur: number) {
   let sample_rate = 16000
@@ -167,7 +168,14 @@ export default function Piano() {
   })
   return (
     <Container>
+      <Markdown>{desp}</Markdown>
       <canvas width={880} height={160} tabIndex={1} ref={elt} style={{ width: "100%" }} />
     </Container>
   )
 }
+
+let desp = `
+# 按键说明
+- z, s, x, d, c, v, g, b, h, n, j, m: 音符C, C#, D, D#, E, F, F#, G, G#, A, A#, B
+- [ : 音调降低8度
+- ] : 音调升高8度`

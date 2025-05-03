@@ -1,6 +1,7 @@
 import { Label } from "@mui/icons-material";
 import { Button, Container, Grid, Slider, Stack, TextField } from "@mui/material";
 import { useEffect, useRef, } from "react";
+import Markdown from "react-markdown";
 
 let vs_src = `#version 300 es
 precision mediump float;
@@ -126,6 +127,9 @@ export default function Julia() {
   }, [])
   return (
     <Container sx={{ mb: '1em', mt: '1em' }}>
+      <Markdown>
+        {desp}
+      </Markdown>
       <Grid>
         <Grid style={{ textAlign: "center" }}>
           <canvas ref={canvas_ref} width={1920 * 0.5} height={1080 * 0.5} />
@@ -157,3 +161,10 @@ export default function Julia() {
     </Container >
   )
 }
+
+let desp = `
+# Julia集
+z = z*z + c
+- Real Part c的实部
+- Imag Part c的虚部
+- Iter Count 迭代次数`

@@ -1,6 +1,7 @@
 import { Button, Container, Stack } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { Render, RenderBuilder } from "../utils/Render";
+import Markdown from "react-markdown";
 
 
 export default function Mandelbrot() {
@@ -48,15 +49,15 @@ export default function Mandelbrot() {
     `
     let transfrom = new DOMMatrix()
     transform_ref.current = transfrom
-    transfrom.scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
+    transfrom.scaleSelf(canvas_ref.current!.clientWidth / canvas_ref.current!.clientHeight, 1)
     let render = build.build()
     render_ref.current = render
     render.transform = transfrom
     render.render()
     canvas_ref.current!.onwheel = (ev) => {
       console.log(ev.offsetX, ev.offsetY, ev)
-      let x = ev.offsetX / canvas_ref.current!.width * 2 - 1
-      let y = ev.offsetY / canvas_ref.current!.height * 2 - 1
+      let x = ev.offsetX / canvas_ref.current!.clientWidth * 2 - 1
+      let y = ev.offsetY / canvas_ref.current!.clientHeight * 2 - 1
       let transfrom = transform_ref.current
       transfrom.translateSelf(x, -y)
       if (ev.deltaY < 0) {
@@ -77,15 +78,15 @@ export default function Mandelbrot() {
           first_pos[0] = ev.offsetX
           first_pos[1] = ev.offsetY
         } else {
-          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.width * 2
-          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.height * 2
+          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.clientWidth * 2
+          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.clientHeight * 2
           render.transform = transfrom.translate(-x, y)
           render.render()
         }
       } else {
         if (first_pos[0] !== -100) {
-          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.width * 2
-          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.height * 2
+          let x = (ev.offsetX - first_pos[0]) / canvas_ref.current!.clientWidth * 2
+          let y = (ev.offsetY - first_pos[1]) / canvas_ref.current!.clientHeight * 2
           transfrom.translateSelf(-x, y)
           render.transform = transfrom
           render.render()
@@ -96,18 +97,24 @@ export default function Mandelbrot() {
   })
 
   return (
-    <Stack textAlign='center'>
-      <Container>
+    <Container>
+      <Stack>
+        <Markdown>{desp}</Markdown>
         <canvas ref={canvas_ref} width={600} height={400} />
-      </Container>
-      <Button onClick={() => {
-        if (render_ref.current) {
-          transform_ref.current = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
-          render_ref.current.transform = transform_ref.current
-          render_ref.current.render()
-        }
-      }}>Reset</Button>
-    </Stack>
+        <Button onClick={() => {
+          if (render_ref.current) {
+            transform_ref.current = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
+            render_ref.current.transform = transform_ref.current
+            render_ref.current.render()
+          }
+        }}>Reset</Button>
+      </Stack>
+    </Container >
   )
-
 }
+
+let desp = `
+# Mandelbrot集
+- 双指放缩
+- 鼠标拖动平移
+- reset重置到初始位置`
