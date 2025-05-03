@@ -15,7 +15,11 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-export default function TUpload(props: { onFile?: (file: File) => Promise<void> | void, accept?: string }) {
+export interface TUploadProp {
+  onFile?: (file: File) => Promise<void> | void, accept?: string
+}
+
+export default function TUpload(props: TUploadProp) {
   let [name, set_name] = useState('')
   return (
     <Grid container sx={{ width: "100%" }} alignItems={'center'} spacing={2}>

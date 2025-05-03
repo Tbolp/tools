@@ -1,4 +1,4 @@
-import { Grid, MenuItem, Select, SelectProps } from "@mui/material";
+import { Grid, MenuItem, Select, SelectProps, Stack } from "@mui/material";
 import { ReactNode, useState } from "react";
 
 /**
@@ -42,27 +42,21 @@ export interface TSelectProps {
 export function TSelect2(props: TSelectProps) {
   let [value, set_value] = useState(props.defaultValue)
   return (
-    <Grid container style={{
-      alignItems: 'center'
-    }}>
-      <Grid item xs={true}>
-        <p>{props.text}</p>
-      </Grid>
-      <Grid item xs={true}>
-        <Select disabled={props.disabled} value={value} onChange={(e) => {
-          set_value(e.target.value as number)
-          let value = props.values.find((v) => v.value === e.target.value)
-          if (value) {
-            props.onSelect?.(value)
-          }
-        }}>
-          {props.values.map((value, index) => (
-            <MenuItem key={index} value={value.value}>
-              {value.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-    </Grid>
-  );
+    <Stack justifyContent={'space-between'} direction={'row'}>
+      <p>{props.text}</p>
+      <Select disabled={props.disabled} value={value} onChange={(e) => {
+        set_value(e.target.value as number)
+        let value = props.values.find((v) => v.value === e.target.value)
+        if (value) {
+          props.onSelect?.(value)
+        }
+      }}>
+        {props.values.map((value, index) => (
+          <MenuItem key={index} value={value.value}>
+            {value.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </Stack>
+  )
 }

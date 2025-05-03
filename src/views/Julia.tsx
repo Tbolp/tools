@@ -2,6 +2,7 @@ import { Label } from "@mui/icons-material";
 import { Button, Container, Grid, Slider, Stack, TextField } from "@mui/material";
 import { useEffect, useRef, } from "react";
 import Markdown from "react-markdown";
+import { TSlider } from "../components/TSlider";
 
 let vs_src = `#version 300 es
 precision mediump float;
@@ -135,27 +136,18 @@ export default function Julia() {
           <canvas ref={canvas_ref} width={1920 * 0.5} height={1080 * 0.5} />
         </Grid>
         <Stack>
-          <Stack direction={'row'} sx={{ mb: 1 }} alignItems="center">
-            <p style={{ whiteSpace: 'nowrap' }}>Real Part</p>
-            <Slider min={-2} max={2} step={0.001} defaultValue={param_ref.current[0]} onChange={(_, val) => {
-              param_ref.current[0] = val as number
-              render(gl_ref.current!, prog_ref.current!, param_ref.current)
-            }} />
-          </Stack>
-          <Stack direction={'row'} sx={{ mb: 1 }} alignItems="center">
-            <p style={{ whiteSpace: 'nowrap' }}>Imag Part</p>
-            <Slider min={-2} max={2} step={0.001} defaultValue={param_ref.current[1]} onChange={(_, val) => {
-              param_ref.current[1] = val as number
-              render(gl_ref.current!, prog_ref.current!, param_ref.current)
-            }} />
-          </Stack>
-          <Stack direction={'row'} sx={{ mb: 1 }} alignItems="center">
-            <p style={{ whiteSpace: 'nowrap' }}>Iter Count</p>
-            <Slider min={0} max={200} defaultValue={param_ref.current[2]} onChange={(_, val) => {
-              param_ref.current[2] = val as number
-              render(gl_ref.current!, prog_ref.current!, param_ref.current)
-            }} />
-          </Stack>
+          <TSlider text="Real Part" defaultValue={param_ref.current[0]} min={-2} max={2} step={0.001} onChange={(val) => {
+            param_ref.current[0] = val
+            render(gl_ref.current!, prog_ref.current!, param_ref.current)
+          }} />
+          <TSlider text="Imag Part" defaultValue={param_ref.current[1]} min={-2} max={2} step={0.001} onChange={(val) => {
+            param_ref.current[1] = val
+            render(gl_ref.current!, prog_ref.current!, param_ref.current)
+          }} />
+          <TSlider text="Iter Count" defaultValue={param_ref.current[2]} min={0} max={200} step={1} onChange={(val) => {
+            param_ref.current[2] = val
+            render(gl_ref.current!, prog_ref.current!, param_ref.current)
+          }} />
         </Stack>
       </Grid>
     </Container >

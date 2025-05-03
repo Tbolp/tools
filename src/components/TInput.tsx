@@ -1,21 +1,17 @@
-import { Grid, TextField } from "@mui/material";
+import { Box, Grid, Stack, TextField } from "@mui/material";
 
-export default function TInput(props: {
+export interface TInputProp {
   text: string,
   value?: string,
   disabled?: boolean,
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
-}) {
+}
+
+export default function TInput(props: TInputProp) {
   return (
-    <Grid container style={{
-      alignItems: 'center'
-    }}>
-      <Grid item xs={true}>
-        <p>{props.text}</p>
-      </Grid>
-      <Grid item xs={true}>
-        <TextField type="" fullWidth variant="standard" value={props.value} onChange={props.onChange} disabled={props.disabled} />
-      </Grid>
-    </Grid>
-  );
+    <Stack justifyContent={'space-between'} direction={'row'}>
+      <p>{props.text}</p>
+      <TextField type="" variant="standard" value={props.value} onChange={props.onChange} disabled={props.disabled} />
+    </Stack>
+  )
 }

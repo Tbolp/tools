@@ -3,6 +3,7 @@ import TUpload from "../components/TUpload";
 import { useEffect, useRef, useState } from "react";
 import { Render, RenderBuilder } from "../utils/Render";
 import Markdown from "react-markdown";
+import { TSlider } from "../components/TSlider";
 
 
 function create_kernel(radius: number, sigma: number) {
@@ -100,24 +101,18 @@ export default function Gaussian() {
         }
         img.src = URL.createObjectURL(blob)
       }} />
-      <Stack direction={'row'} sx={{ mb: 1 }} alignItems="center">
-        <p style={{ whiteSpace: 'nowrap' }}>Radius</p>
-        <Slider min={0} max={20} step={1} defaultValue={param_ref.current[0]} onChange={(_, val) => {
-          param_ref.current[0] = val as number
-          if (render_ref.current) {
-            rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
-          }
-        }} />
-      </Stack>
-      <Stack direction={'row'} sx={{ mb: 1 }} alignItems="center">
-        <p style={{ whiteSpace: 'nowrap' }}>Sigma</p>
-        <Slider min={0.1} max={20} step={0.1} defaultValue={param_ref.current[1]} onChange={(_, val) => {
-          param_ref.current[1] = val as number
-          if (render_ref.current) {
-            rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
-          }
-        }} />
-      </Stack>
+      <TSlider text="Radius" defaultValue={param_ref.current[0]} min={0} max={20} step={1} onChange={(val) => {
+        param_ref.current[0] = val
+        if (render_ref.current) {
+          rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
+        }
+      }} />
+      <TSlider text="Sigma" defaultValue={param_ref.current[1]} min={0.1} max={20} step={0.1} onChange={(val) => {
+        param_ref.current[1] = val as number
+        if (render_ref.current) {
+          rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
+        }
+      }} />
       <canvas ref={canvas_ref} />
     </Container>
   )

@@ -100,7 +100,11 @@ export default function Mandelbrot() {
     <Container>
       <Stack>
         <Markdown>{desp}</Markdown>
-        <canvas ref={canvas_ref} width={600} height={400} />
+        <Stack alignItems={'center'}>
+          <canvas ref={canvas_ref} width={600} height={400} style={{
+            width: '80%'
+          }} />
+        </Stack>
         <Button onClick={() => {
           if (render_ref.current) {
             transform_ref.current = new DOMMatrix().scaleSelf(canvas_ref.current!.width / canvas_ref.current!.height, 1)
