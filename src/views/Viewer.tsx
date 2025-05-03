@@ -2,7 +2,7 @@ import { Container, MenuItem } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useEffect, useRef, useState } from "react";
 import TUpload from "../components/TUpload";
-import TSelect from "../components/TSelect";
+import { TSelect2 } from "../components/TSelect";
 import TInput from "../components/TInput";
 
 function uint16ToFloat16(uint16: number) {
@@ -198,21 +198,21 @@ export default function Viewer() {
         }
         set_buf(await file.arrayBuffer())
       }} />
-      <TSelect text="Format" select_props={{
-        value: format,
-        onChange: (e) => {
-          set_format(e.target.value as number)
-        }
-      }}>
-        <MenuItem value={FORMAT_RGB}>R8G8B8</MenuItem>
-        <MenuItem value={FORMAT_BGR}>B8G8R8</MenuItem>
-        <MenuItem value={FORMAT_NV12}>NV12</MenuItem>
-        <MenuItem value={FORMAT_NV21}>NV21</MenuItem>
-        <MenuItem value={FORMAT_F16}>F16</MenuItem>
-        <MenuItem value={FORMAT_IMG}>IMG</MenuItem>
-      </TSelect>
-      <Container sx={{ display: format !== 1 ? 'block' : 'none' }}>
-        <TInput text="Width" value={width.toString(10)} onChange={async (e) => {
+      <TSelect2 text="Format"
+        defaultValue={format}
+        values={[
+          { label: 'R8G8B8', value: FORMAT_RGB },
+          { label: 'B8G8R8', value: FORMAT_BGR },
+          { label: 'NV12', value: FORMAT_NV12 },
+          { label: 'NV21', value: FORMAT_NV21 },
+          { label: 'F16', value: FORMAT_F16 },
+          { label: 'IMG', value: FORMAT_IMG },
+        ]}
+        onSelect={(e) => {
+          set_format(e.value as number)
+        }} />
+      <TInput text="Width" disabled={format !== 1 ? false : true}
+        value={width.toString(10)} onChange={async (e) => {
           let w = parseInt(e.target.value)
           if (Number.isNaN(w)) {
             set_width(0)
@@ -220,7 +220,6 @@ export default function Viewer() {
             set_width(w)
           }
         }} />
-      </Container>
       <canvas ref={canvas} style={{
       }} width={0} height={0} />
     </Container>

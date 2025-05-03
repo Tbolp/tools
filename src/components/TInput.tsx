@@ -3,6 +3,7 @@ import { Grid, TextField } from "@mui/material";
 export default function TInput(props: {
   text: string,
   value?: string,
+  disabled?: boolean,
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
 }) {
   return (
@@ -13,7 +14,7 @@ export default function TInput(props: {
         <p>{props.text}</p>
       </Grid>
       <Grid item xs={true}>
-        <TextField type="" fullWidth variant="standard" value={props.value} onChange={props.onChange} />
+        <TextField type="" fullWidth variant="standard" value={props.value} onChange={props.onChange} disabled={props.disabled} />
       </Grid>
     </Grid>
   );

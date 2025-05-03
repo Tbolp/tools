@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { PauseCircleFilled, PlayCircleFilled } from "@mui/icons-material";
 import TWave from "../components/TWave";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
+import { TSelect2 } from "../components/TSelect";
 
 async function arraybuffer2audiobuffer(ctx: AudioContext, buf: ArrayBuffer, format: number): Promise<AudioBuffer> {
   if (format == 0) {
@@ -77,19 +78,20 @@ export default function Player() {
         }} />
       </Grid>
       <Grid>
-        <Select label="" disabled={playing} value={format} onChange={async (e) => {
+        <TSelect2 text="Format" values={[
+          { label: "pcm_s16le_16000_mono", value: 0 },
+          { label: "audio", value: 1 },
+        ]} defaultValue={format} onSelect={async (e) => {
           let ctx = context.current
           if (ctx.audio_ctx && ctx.file_buf) {
-            let fmt = e.target.value as number
+            let fmt = e.value as number
             ctx.audio_buf = await arraybuffer2audiobuffer(ctx.audio_ctx, ctx.file_buf.slice(0), fmt)
             set_format(fmt)
             set_wave_data(ctx.audio_buf)
             set_progress(0)
           }
-        }}>
-          <MenuItem value={0}>pcm_s16le_16000_mono</MenuItem>
-          <MenuItem value={1}>audio</MenuItem>
-        </Select>
+        }} disabled={playing} />
+
         <h4>Info</h4>
         {context.current.audio_buf ?
           <p> {`Current/Total: ${(progress * context.current.audio_buf.duration).toPrecision(3)} / ${(context.current.audio_buf?.duration).toPrecision(3)}s`} </p> :
