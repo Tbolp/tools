@@ -263,7 +263,7 @@ export default function Gaussian() {
                 backgroundColor: '#f5f5f5',
                 p: 2,
                 borderRadius: 1,
-                border: '2px solid #1976d2'
+                border: '2px solid #e0e0e0'
               }}>
                 <canvas ref={canvas_ref} style={{ maxWidth: '100%', height: 'auto', display: 'block' }} />
               </Box>
