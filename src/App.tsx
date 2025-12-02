@@ -4,6 +4,7 @@ import './App.css';
 import { AppBar, Container, Drawer, IconButton, Toolbar, Typography, Box, List, LinkProps, ListItemButton, ListItemText, Divider, ListItemIcon, Button } from '@mui/material';
 import { MenuOutlined, AccountBalanceOutlined, Pin } from '@mui/icons-material'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import Loading from './views/Loading';
 const Player = lazy(() => import('./views/Player'))
 const Viewer = lazy(() => import('./views/Viewer'))
 const Cheese = lazy(() => import('./views/Cheese'))
@@ -18,7 +19,7 @@ function App() {
   return (
     <Box>
       <BrowserRouter>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loading />}>
           <Routes>
             <Route path={process.env.PUBLIC_URL} >
               <Route index Component={Home} />
