@@ -1,5 +1,6 @@
 import { Label, Download, RotateLeft } from "@mui/icons-material";
 import { Button, Container, Grid, Slider, TextField, Paper, Typography, Box, Alert, IconButton, Tooltip, Stack, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import _ from "lodash";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Markdown from "react-markdown";
 
@@ -111,20 +112,6 @@ function render(gl: WebGL2RenderingContext, prog: WebGLProgram, param: number[])
   gl.drawArrays(gl.TRIANGLES, 0, 6)
 }
 
-// Use debounce to optimize performance
-function useDebounce<T extends (...args: any[]) => any>(callback: T, delay: number): T {
-  const timeoutRef = useRef<NodeJS.Timeout>()
-
-  const debouncedCallback = useCallback((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    timeoutRef.current = setTimeout(() => callback(...args), delay)
-  }, [callback, delay]) as T
-
-  return debouncedCallback
-}
-
 export default function Julia() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const glRef = useRef<WebGL2RenderingContext | null>(null)
@@ -136,12 +123,6 @@ export default function Julia() {
   const [isLoading, setIsLoading] = useState(true)
   const [canvasSize, setCanvasSize] = useState({ width: 960, height: 540 })
 
-  // Debounced render function
-  const debouncedRender = useDebounce((gl: WebGL2RenderingContext, prog: WebGLProgram, param: number[]) => {
-    if (gl && prog) {
-      render(gl, prog, param)
-    }
-  }, 16) // ~60fps
   // Responsive canvas size
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -205,7 +186,7 @@ export default function Julia() {
       console.log('WebGL initialized successfully')
 
       // Initial render
-      debouncedRender(gl, prog, [realPart, imagPart, iterCount])
+      _.debounce(render, 16)(gl, prog, [realPart, imagPart, iterCount])
 
       // Set loading to false only after successful initialization
       setIsLoading(false)
@@ -223,7 +204,7 @@ export default function Julia() {
       gl.viewport(0, 0, canvasSize.width, canvasSize.height)
       const loc = gl.getUniformLocation(progRef.current, 'tran')
       gl.uniform2f(loc, canvasSize.width * 0.5, canvasSize.height * 0.5)
-      debouncedRender(gl, progRef.current, [realPart, imagPart, iterCount])
+      _.debounce(render, 16)(gl, progRef.current, [realPart, imagPart, iterCount])
     }
   }, [canvasSize, realPart, imagPart, iterCount])
 
