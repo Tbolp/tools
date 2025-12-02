@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -16,7 +15,6 @@ import {
 } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 import ImageIcon from '@mui/icons-material/Image';
-import FunctionsIcon from '@mui/icons-material/Functions';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PianoIcon from '@mui/icons-material/Piano';
@@ -133,7 +131,7 @@ export default function Home() {
             Welcome to Creative Toolkit
           </Typography>
           <Typography variant="h6" sx={{ opacity: 0.95, maxWidth: '800px' }}>
-            A comprehensive suite of creative and computational tools designed to enhance your productivity. 
+            A comprehensive suite of creative and computational tools designed to enhance your productivity.
             From mathematical visualizations to media processing, everything you need in one place.
           </Typography>
         </Paper>
@@ -150,66 +148,66 @@ export default function Home() {
           </Box>
 
           <Grid container spacing={3}>
-          {toolsData.map((tool) => (
-            <Grid item xs={12} sm={6} md={4} key={tool.id}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                  },
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar
-                      sx={{
-                        bgcolor: tool.color,
-                        width: 48,
-                        height: 48,
-                        mr: 2,
-                      }}
-                    >
-                      {tool.icon}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="h6" component="div" fontWeight="bold">
-                        {tool.name}
-                      </Typography>
-                      <Chip
-                        label={tool.category}
-                        size="small"
-                        sx={{ mt: 0.5 }}
-                        color="primary"
-                        variant="outlined"
-                      />
+            {toolsData.map((tool) => (
+              <Grid item xs={12} sm={6} md={4} key={tool.id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: tool.color,
+                          width: 48,
+                          height: 48,
+                          mr: 2,
+                        }}
+                      >
+                        {tool.icon}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6" component="div" fontWeight="bold">
+                          {tool.name}
+                        </Typography>
+                        <Chip
+                          label={tool.category}
+                          size="small"
+                          sx={{ mt: 0.5 }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </Box>
                     </Box>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 500 }}>
-                    {tool.description}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {tool.details}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ padding: 2, pt: 0 }}>
-                  <Button
-                    component={Link}
-                    to={tool.id}
-                    size="small"
-                    variant="contained"
-                    fullWidth
-                  >
-                    Launch Tool
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 500 }}>
+                      {tool.description}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {tool.details}
+                    </Typography>
+                  </CardContent>
+                  <CardActions sx={{ padding: 2, pt: 0 }}>
+                    <Button
+                      component={Link}
+                      to={tool.id}
+                      size="small"
+                      variant="contained"
+                      fullWidth
+                    >
+                      Launch Tool
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
         </Box>
       </Container>
