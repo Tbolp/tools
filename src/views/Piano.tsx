@@ -1,7 +1,9 @@
-import { Button, Container, Typography } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { Button, Container, Typography, Paper, Box, Alert, Grid, Chip, Stack } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 import { FSM, FSMBuilder } from "../utils/FSM";
 import Markdown from "react-markdown";
+import PianoIcon from '@mui/icons-material/Piano';
+import KeyboardIcon from '@mui/icons-material/Keyboard';
 
 function create_buf(ctx: AudioContext, fre: number, dur: number) {
   let sample_rate = 16000
@@ -25,6 +27,7 @@ class App {
   map: Map<string, number>
   keys: Key[] = []
   freqs = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440, 466.16, 493.88]
+
   constructor() {
     this.ctx = new AudioContext()
     this.map = new Map()
@@ -142,40 +145,246 @@ class App {
 
 export default function Piano() {
   let elt = useRef<HTMLCanvasElement>(null)
+  const [octave, setOctave] = useState('Normal')
+  const [lastPlayedNote, setLastPlayedNote] = useState<string | null>(null)
+
   useEffect(() => {
     let app = new App()
-    elt.current!.onkeydown = (e) => {
-      app.onKey(e.key)
+
+    // Handle keydown events at document level
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent key events when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      const key = e.key.toLowerCase()
+
+      // Play note if it's a valid piano key
+      if (app.map.has(key)) {
+        app.onKey(key)
+        setLastPlayedNote(key.toUpperCase())
+      }
+
+      // Handle octave controls
       if (e.key === '[') {
         app.down()
+        setOctave('Low')
+        e.preventDefault()
       } else if (e.key === ']') {
         app.up()
+        setOctave('High')
+        e.preventDefault()
       }
-      e.preventDefault()
     }
-    elt.current!.onkeyup = (e) => {
+
+    // Handle keyup events at document level
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // Prevent key events when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
       if (e.key === '[') {
         app.d2n()
+        setOctave('Normal')
+        e.preventDefault()
       } else if (e.key === ']') {
         app.u2n()
+        setOctave('Normal')
+        e.preventDefault()
       }
-      e.preventDefault()
     }
-    elt.current!.onmousedown = (e) => {
-      console.log(e)
+
+    // Attach event listeners to document
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keyup', handleKeyUp)
+
+    // Draw the piano
+    if (elt.current) {
+      app.draw(elt.current.getContext('2d')!)
     }
-    app.draw(elt.current!.getContext('2d')!)
-  })
+
+    // Cleanup event listeners on unmount
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
   return (
-    <Container>
-      <Markdown>{desp}</Markdown>
-      <canvas width={880} height={160} tabIndex={1} ref={elt} style={{ width: "100%" }} />
+    <Container maxWidth="lg" sx={{ mb: '2em', mt: '2em' }}>
+      {/* Header Section */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h4" gutterBottom fontWeight="bold" color="primary">
+          Virtual Piano
+        </Typography>
+        <Typography variant="body1" color="text.secondary" paragraph>
+          An interactive virtual piano with keyboard controls. Play music using your computer keyboard
+          with support for multiple octaves and sound synthesis.
+        </Typography>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          <strong>How to use:</strong> Click on the piano canvas to focus it, then use your keyboard to play notes.
+          Press [ or ] keys to change octaves.
+        </Alert>
+      </Paper>
+
+      {/* Keyboard Guide Section */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          1. Keyboard Controls
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Click on the piano below to activate keyboard controls
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <Box sx={{
+              p: 2,
+              backgroundColor: '#f5f5f5',
+              borderRadius: 1,
+              border: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="primary">
+                Musical Notes
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="Z" size="small" />
+                  <Typography variant="body2">C</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="S" size="small" />
+                  <Typography variant="body2">C#</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="X" size="small" />
+                  <Typography variant="body2">D</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="D" size="small" />
+                  <Typography variant="body2">D#</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="C" size="small" />
+                  <Typography variant="body2">E</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="V" size="small" />
+                  <Typography variant="body2">F</Typography>
+                </Box>
+              </Stack>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Box sx={{
+              p: 2,
+              backgroundColor: '#f5f5f5',
+              borderRadius: 1,
+              border: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="primary">
+                Musical Notes (continued)
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="G" size="small" />
+                  <Typography variant="body2">F#</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="B" size="small" />
+                  <Typography variant="body2">G</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="H" size="small" />
+                  <Typography variant="body2">G#</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="N" size="small" />
+                  <Typography variant="body2">A</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="J" size="small" />
+                  <Typography variant="body2">A#</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="M" size="small" />
+                  <Typography variant="body2">B</Typography>
+                </Box>
+              </Stack>
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Box sx={{ mt: 2, p: 2, backgroundColor: '#fff3e0', borderRadius: 1, border: '1px solid #ffb74d' }}>
+          <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="warning.dark">
+            Octave Controls
+          </Typography>
+          <Stack direction="row" spacing={3}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip label="[" size="small" color="warning" variant="outlined" />
+              <Typography variant="body2">Lower octave (hold)</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip label="]" size="small" color="warning" variant="outlined" />
+              <Typography variant="body2">Raise octave (hold)</Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Status Section */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          2. Current Status
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Current Octave:
+          </Typography>
+          <Chip
+            label={octave}
+            color={octave === 'Low' ? 'info' : octave === 'High' ? 'error' : 'success'}
+            icon={<PianoIcon />}
+          />
+        </Box>
+      </Paper>
+
+      {/* Piano Section */}
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          3. Interactive Piano
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Click the piano to focus, then use your keyboard to play
+        </Typography>
+
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f5f5f5',
+          p: 3,
+          borderRadius: 1,
+          border: '2px solid #e0e0e0'
+        }}>
+          <canvas
+            width={880}
+            height={160}
+            ref={elt}
+            style={{
+              width: "100%",
+              maxWidth: '880px',
+              cursor: 'pointer',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          />
+        </Box>
+      </Paper>
     </Container>
   )
 }
 
-let desp = `
-# 按键说明
-- z, s, x, d, c, v, g, b, h, n, j, m: 音符C, C#, D, D#, E, F, F#, G, G#, A, A#, B
-- [ : 音调降低8度
-- ] : 音调升高8度`
