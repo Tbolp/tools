@@ -1,9 +1,10 @@
-import { Button, Container, Typography, Paper, Box, Alert, Grid, Chip, Stack } from "@mui/material";
+import { Button, Container, Typography, Paper, Box, Alert, Grid, Chip, Stack, FormControl, RadioGroup, FormControlLabel, Radio } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { FSM, FSMBuilder } from "../utils/FSM";
 import Markdown from "react-markdown";
 import PianoIcon from '@mui/icons-material/Piano';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
+import TouchAppIcon from '@mui/icons-material/TouchApp'
 
 function create_buf(ctx: AudioContext, fre: number, dur: number) {
   let sample_rate = 16000
@@ -19,14 +20,24 @@ class Key {
   type = 0
   area = [0, 0, 0, 0]
   fre = 0
-  isPress = false
+  isKeep = false
+  isTouch = false
+}
+
+interface TouchInfo extends Touch {
+  key: Key
 }
 
 class App {
-  ctx: AudioContext
-  keys: Key[] = []
-  str2key: Map<string, Key> = new Map()
+  private ctx: AudioContext
+  private keys: Key[] = []
+  private str2key: Map<string, Key> = new Map()
   private _renderCtx: CanvasRenderingContext2D | null = null
+  private _showCircle = true
+
+  set showCircle(val: boolean) {
+    this._showCircle = val
+  }
 
   set renderCtx(ctx: CanvasRenderingContext2D | null) {
     this._renderCtx = ctx
@@ -98,15 +109,69 @@ class App {
     }
   }
 
+  private touchList: TouchInfo[] = []
+
+  onTouch(e: TouchEvent) {
+    let keys = new Set<Key>
+    for (let it of e.touches) {
+      let touchKey: Key | null = null
+      let rect = (e.target as HTMLElement).getBoundingClientRect()
+      let x = (it.clientX - rect.left) / rect.width * 420
+      let y = (it.clientY - rect.top) / rect.height * 80
+      // console.log(x, y)
+      for (let key of this.keys) {
+        if (key.type == 1) {
+          if (x > key.area[0] &&
+            x < key.area[0] + key.area[2] &&
+            y > key.area[1] &&
+            y < key.area[1] + key.area[3]) {
+            touchKey = key
+            break
+          }
+        }
+      }
+      if (touchKey == null) {
+        for (let key of this.keys) {
+          if (key.type == 0) {
+            if (x > key.area[0] &&
+              x < key.area[0] + key.area[2] &&
+              y > key.area[1] &&
+              y < key.area[1] + key.area[3]) {
+              touchKey = key
+              break
+            }
+          }
+        }
+      }
+      if (touchKey != null) {
+        keys.add(touchKey)
+      }
+    }
+    // console.log(keys, this.keys)
+    for (let key of this.keys) {
+      if (key.isTouch == true) {
+        if (!keys.has(key)) {
+          key.isTouch = false
+        }
+      } else {
+        if (keys.has(key)) {
+          key.isTouch = true
+          this.press(key)
+        }
+      }
+    }
+    e.preventDefault()
+  }
+
   private press(key: Key) {
     let node = this.ctx.createBufferSource()
     node.buffer = create_buf(this.ctx, key.fre, 0.5)
     node.connect(this.ctx.destination)
     node.start()
-    key.isPress = true
+    key.isKeep = true
     this.draw()
     node.onended = () => {
-      key.isPress = false
+      key.isKeep = false
       this.draw()
     }
   }
@@ -132,9 +197,15 @@ class App {
       ctx.beginPath()
       ctx.roundRect(key.area[0], key.area[1], key.area[2], key.area[3], 2)
       ctx.fill()
+      if (key.isTouch) {
+        ctx.fillStyle = '#1e8fe088'
+        ctx.beginPath()
+        ctx.roundRect(key.area[0], key.area[1], key.area[2], key.area[3], 2)
+        ctx.fill()
+      }
     }
     for (let key of this.keys) {
-      if (key.isPress) {
+      if (key.isKeep && this._showCircle) {
         ctx.fillStyle = '#1e8fe0ff'
         ctx.beginPath()
         ctx.ellipse(key.area[0] + key.area[2] * 0.5, key.area[1] + (key.area[3] - key.area[1]) * 0.8, 3, 3, 0, 0, Math.PI * 2)
@@ -146,6 +217,74 @@ class App {
 }
 
 export default function Piano() {
+  const [controlMode, setControlMode] = useState<'keyboard' | 'touch'>('keyboard');
+
+  return (
+    <Container maxWidth="lg" sx={{ mb: '2em', mt: '2em' }}>
+      {/* Header Section */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h4" gutterBottom fontWeight="bold" color="primary">
+          Virtual Piano
+        </Typography>
+        <Typography variant="body1" color="text.secondary" paragraph>
+          An interactive virtual piano with keyboard controls. Play music using your computer keyboard
+          with support for multiple octaves and sound synthesis.
+        </Typography>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          <strong>How to use:</strong> Choose your control mode below, then either use your keyboard or touch the piano keys to play notes.
+        </Alert>
+      </Paper >
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          1. Control Mode
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Choose how you want to control the piano:
+        </Typography>
+        <FormControl component="fieldset">
+          <RadioGroup
+            row
+            value={controlMode}
+            onChange={(e) => setControlMode(e.target.value as 'keyboard' | 'touch')}
+          >
+            <FormControlLabel
+              value="keyboard"
+              control={<Radio />}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <KeyboardIcon />
+                  <Typography>Keyboard</Typography>
+                </Box>
+              }
+            />
+            <FormControlLabel
+              value="touch"
+              control={<Radio />}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TouchAppIcon />
+                  <Typography>Touch</Typography>
+                </Box>
+              }
+            />
+          </RadioGroup>
+        </FormControl>
+
+        <Box sx={{ mt: 2 }}>
+          {controlMode === 'keyboard' && (<Alert severity="info">
+            {
+              'Use your computer keyboard to play notes. Click on the piano to focus, then use keys Z-X-C-V-B-N-M for white keys and S-D-G-H-J for black keys.'
+            }
+          </Alert>)
+          }
+        </Box>
+      </Paper>
+      {controlMode === 'keyboard' ? <KeyboardPiano /> : <TouchPiano />}
+    </Container>
+  )
+}
+
+function KeyboardPiano() {
   let elt = useRef<HTMLCanvasElement>(null)
   let keyStatus = useRef<Map<string, boolean>>(new Map())
   const [octave, setOctave] = useState(0)
@@ -233,26 +372,11 @@ export default function Piano() {
   }, [])
 
   return (
-    <Container maxWidth="lg" sx={{ mb: '2em', mt: '2em' }}>
-      {/* Header Section */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold" color="primary">
-          Virtual Piano
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          An interactive virtual piano with keyboard controls. Play music using your computer keyboard
-          with support for multiple octaves and sound synthesis.
-        </Typography>
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <strong>How to use:</strong> Click on the piano canvas to focus it, then use your keyboard to play notes.
-          Press [ or ] keys to change octaves.
-        </Alert>
-      </Paper>
-
+    <>
       {/* Keyboard Guide Section */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+      < Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom fontWeight="bold">
-          1. Keyboard Controls
+          2. Keyboard Controls
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Click on the piano below to activate keyboard controls
@@ -353,12 +477,12 @@ export default function Piano() {
             </Box>
           </Stack>
         </Box>
-      </Paper>
+      </Paper >
 
       {/* Status Section */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+      < Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom fontWeight="bold">
-          2. Current Status
+          3. Current Status
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
@@ -370,15 +494,15 @@ export default function Piano() {
             icon={<PianoIcon />}
           />
         </Box>
-      </Paper>
+      </Paper >
 
       {/* Piano Section */}
-      <Paper elevation={2} sx={{ p: 3 }}>
+      < Paper elevation={2} sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom fontWeight="bold">
-          3. Interactive Piano
+          4. Interactive Piano
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Click the piano to focus, then use your keyboard to play
+          Use your keyboard to play
         </Typography>
 
         <Box sx={{
@@ -403,8 +527,59 @@ export default function Piano() {
             }}
           />
         </Box>
-      </Paper>
-    </Container>
+      </Paper >
+    </>
   )
 }
 
+function TouchPiano() {
+  let elt = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    let app = new App
+    app.showCircle = false
+    if (elt.current) {
+      app.renderCtx = elt.current.getContext('2d')
+      elt.current.addEventListener('touchstart', (e) => app.onTouch(e))
+      elt.current.addEventListener('touchmove', (e) => app.onTouch(e))
+      elt.current.addEventListener('touchend', (e) => app.onTouch(e))
+    }
+  }, [])
+
+  return (
+    <>
+      {/* Piano Section */}
+      < Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          4. Interactive Piano
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Press piano to play
+        </Typography>
+
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f5f5f5',
+          p: 3,
+          borderRadius: 1,
+          border: '2px solid #e0e0e0'
+        }}>
+          <canvas
+            width={840}
+            height={160}
+            ref={elt}
+            style={{
+              width: "100%",
+              maxWidth: '880px',
+              cursor: 'pointer',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          />
+        </Box>
+      </Paper >
+    </>
+  )
+}
