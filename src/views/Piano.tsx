@@ -19,17 +19,25 @@ class Key {
   type = 0
   area = [0, 0, 0, 0]
   fre = 0
+  isPress = false
 }
 
 class App {
   ctx: AudioContext
   keys: Key[] = []
   str2key: Map<string, Key> = new Map()
+  private _renderCtx: CanvasRenderingContext2D | null = null
+
+  set renderCtx(ctx: CanvasRenderingContext2D | null) {
+    this._renderCtx = ctx
+    this.draw()
+  }
 
   constructor() {
     this.ctx = new AudioContext()
     this.initKey()
   }
+
   initKey() {
     const freqs = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440, 466.16, 493.88]
     let white = [0, 2, 4, 5, 7, 9, 11]
@@ -83,25 +91,38 @@ class App {
   }
 
   onKey(keyStr: string) {
-    console.log(keyStr)
+    // console.log(keyStr)
     let key = this.str2key.get(keyStr)
     if (key) {
       this.press(key)
     }
   }
+
   private press(key: Key) {
     let node = this.ctx.createBufferSource()
     node.buffer = create_buf(this.ctx, key.fre, 0.5)
     node.connect(this.ctx.destination)
     node.start()
+    key.isPress = true
+    this.draw()
+    node.onended = () => {
+      key.isPress = false
+      this.draw()
+    }
   }
-  draw(ctx: CanvasRenderingContext2D) {
+
+  draw() {
+    if (this._renderCtx === null) {
+      return
+    }
+    let ctx = this._renderCtx
     ctx.clearRect(0, 0, 1000, 1000)
     ctx.fillStyle = 'gray'
     ctx.fillRect(0, 0, 1000, 1000)
     ctx.save()
+    ctx.translate(1, 0)
     ctx.scale(2, 2)
-    ctx.translate(10, 0)
+
     for (let key of this.keys) {
       if (key.type === 0) {
         ctx.fillStyle = '#eeeeee'
@@ -112,13 +133,21 @@ class App {
       ctx.roundRect(key.area[0], key.area[1], key.area[2], key.area[3], 2)
       ctx.fill()
     }
+    for (let key of this.keys) {
+      if (key.isPress) {
+        ctx.fillStyle = '#1e8fe0ff'
+        ctx.beginPath()
+        ctx.ellipse(key.area[0] + key.area[2] * 0.5, key.area[1] + (key.area[3] - key.area[1]) * 0.8, 3, 3, 0, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
     ctx.restore()
   }
 }
 
 export default function Piano() {
   let elt = useRef<HTMLCanvasElement>(null)
-  let keyStatus = useRef<[boolean, boolean]>([false, false])
+  let keyStatus = useRef<Map<string, boolean>>(new Map())
   const [octave, setOctave] = useState(0)
 
   useEffect(() => {
@@ -126,6 +155,16 @@ export default function Piano() {
 
     // Handle keydown events at document level
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (keyStatus.current.has(e.key)) {
+        if (keyStatus.current.get(e.key)) {
+          return
+        } else {
+          keyStatus.current.set(e.key, true)
+        }
+      } else {
+        keyStatus.current.set(e.key, true)
+      }
+
       // Prevent key events when typing in input fields
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return
@@ -135,39 +174,9 @@ export default function Piano() {
         let prefix = val === -1 ? '[' : val === 1 ? ']' : ''
         const key = prefix + e.key.toLowerCase()
         app.onKey(key)
-        return val
-      })
-
-      // Handle octave controls
-      if (e.key === '[') {
-        keyStatus.current[0] = true
-        setOctave(-1)
-      } else if (e.key === ']') {
-        keyStatus.current[1] = true
-        setOctave(1)
-      }
-      e.preventDefault()
-    }
-
-    // Handle keyup events at document level
-    const handleKeyUp = (e: KeyboardEvent) => {
-      // Prevent key events when typing in input fields
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return
-      }
-
-      if (e.key === '[') {
-        keyStatus.current[0] = false
-      } else if (e.key === ']') {
-        keyStatus.current[1] = false
-      }
-
-      setOctave((val) => {
-        if (keyStatus.current[0] === false && keyStatus.current[1] === false) {
-          return 0
-        } else if (keyStatus.current[0] && keyStatus.current[1] === false) {
+        if (e.key === '[') {
           return -1
-        } else if (keyStatus.current[1] && keyStatus.current[0] === false) {
+        } else if (e.key === ']') {
           return 1
         }
         return val
@@ -175,13 +184,45 @@ export default function Piano() {
       e.preventDefault()
     }
 
+    // Handle keyup events at document level
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (keyStatus.current.has(e.key)) {
+        if (keyStatus.current.get(e.key) === true) {
+          keyStatus.current.set(e.key, false)
+        } else {
+          return
+        }
+      } else {
+        return
+      }
+      // Prevent key events when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      setOctave((val) => {
+        if (keyStatus.current.get('[') === false && keyStatus.current.get(']') === false) {
+          return 0
+        } else if (keyStatus.current.get('[') && keyStatus.current.get(']') === false) {
+          return -1
+        } else if (keyStatus.current.get('[') === false && keyStatus.current.get(']')) {
+          return 1
+        }
+        return val
+      })
+      e.preventDefault()
+    }
+
+    keyStatus.current.set('[', false)
+    keyStatus.current.set(']', false)
+
     // Attach event listeners to document
     document.addEventListener('keydown', handleKeyDown)
     document.addEventListener('keyup', handleKeyUp)
 
     // Draw the piano
     if (elt.current) {
-      app.draw(elt.current.getContext('2d')!)
+      app.renderCtx = elt.current.getContext('2d')
     }
 
     // Cleanup event listeners on unmount
@@ -350,7 +391,7 @@ export default function Piano() {
           border: '2px solid #e0e0e0'
         }}>
           <canvas
-            width={880}
+            width={840}
             height={160}
             ref={elt}
             style={{
