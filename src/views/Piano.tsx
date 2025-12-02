@@ -23,37 +23,17 @@ class Key {
 
 class App {
   ctx: AudioContext
-  scale: number = 1
-  map: Map<string, number>
   keys: Key[] = []
-  freqs = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440, 466.16, 493.88]
+  str2key: Map<string, Key> = new Map()
 
   constructor() {
     this.ctx = new AudioContext()
-    this.map = new Map()
-    this.map.set('z', this.freqs[0])
-    this.map.set('s', this.freqs[1])
-    this.map.set('x', this.freqs[2])
-    this.map.set('d', this.freqs[3])
-    this.map.set('c', this.freqs[4])
-    this.map.set('v', this.freqs[5])
-    this.map.set('g', this.freqs[6])
-    this.map.set('b', this.freqs[7])
-    this.map.set('h', this.freqs[8])
-    this.map.set('n', this.freqs[9])
-    this.map.set('j', this.freqs[10])
-    this.map.set('m', this.freqs[11])
     this.initKey()
   }
   initKey() {
-    let white = new Map<number, number>()
-    white.set(0, 0)
-    white.set(1, 2)
-    white.set(2, 4)
-    white.set(3, 5)
-    white.set(4, 7)
-    white.set(5, 9)
-    white.set(6, 11)
+    const freqs = [261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392, 415.3, 440, 466.16, 493.88]
+    let white = [0, 2, 4, 5, 7, 9, 11]
+    let keyStrList = ['z', 'x', 'c', 'v', 'b', 'n', 'm']
     for (let j = 0; j < 3; j++) {
       for (let i = 0; i < 7; i++) {
         let key = new Key()
@@ -61,24 +41,24 @@ class App {
         key.area[1] = 0
         key.area[2] = 19
         key.area[3] = 80
-        key.fre = this.freqs[white.get(i)!]
-        if (j == 0) {
+        key.fre = freqs[white[i]]
+        let keyStr = keyStrList[i]
+        if (j === 0) {
           key.fre = key.fre * 0.5
-        } else if (j == 2) {
+          keyStr = '[' + keyStr
+        } else if (j === 2) {
           key.fre = key.fre * 2
+          keyStr = ']' + keyStr
         }
+        this.str2key.set(keyStr, key)
         this.keys.push(key)
       }
     }
-    let black = new Map<number, number>()
-    black.set(0, 1)
-    black.set(1, 3)
-    black.set(2, 6)
-    black.set(3, 8)
-    black.set(4, 10)
+    let black = [1, 3, -1, 6, 8, 10]
+    keyStrList = ['s', 'd', '', 'g', 'h', 'j']
     for (let j = 0; j < 3; j++) {
       for (let i = 0; i < 6; i++) {
-        if (i == 2) {
+        if (i === 2) {
           continue
         }
         let key = new Key()
@@ -87,40 +67,33 @@ class App {
         key.area[1] = -5
         key.area[2] = 15
         key.area[3] = 60
-        key.fre = this.freqs[black.get(i)!]
-        if (j == 0) {
+        key.fre = freqs[black[i]]
+        let keyStr = keyStrList[i]
+        if (j === 0) {
+          keyStr = '[' + keyStr
           key.fre = key.fre * 0.5
-        } else if (j == 2) {
+        } else if (j === 2) {
+          keyStr = ']' + keyStr
           key.fre = key.fre * 2
         }
+        this.str2key.set(keyStr, key)
         this.keys.push(key)
       }
     }
   }
-  onKey(key: string) {
-    let fre = this.map.get(key)
-    if (fre) {
-      let node = this.ctx.createBufferSource()
-      node.buffer = create_buf(this.ctx, fre * this.scale, 0.5)
-      node.connect(this.ctx.destination)
-      node.start()
+
+  onKey(keyStr: string) {
+    console.log(keyStr)
+    let key = this.str2key.get(keyStr)
+    if (key) {
+      this.press(key)
     }
   }
-  up() {
-    this.scale = 2
-  }
-  down() {
-    this.scale = 0.5
-  }
-  u2n() {
-    if (this.scale === 2) {
-      this.scale = 1
-    }
-  }
-  d2n() {
-    if (this.scale === 0.5) {
-      this.scale = 1
-    }
+  private press(key: Key) {
+    let node = this.ctx.createBufferSource()
+    node.buffer = create_buf(this.ctx, key.fre, 0.5)
+    node.connect(this.ctx.destination)
+    node.start()
   }
   draw(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, 1000, 1000)
@@ -130,7 +103,7 @@ class App {
     ctx.scale(2, 2)
     ctx.translate(10, 0)
     for (let key of this.keys) {
-      if (key.type == 0) {
+      if (key.type === 0) {
         ctx.fillStyle = '#eeeeee'
       } else {
         ctx.fillStyle = '#222222'
@@ -145,8 +118,8 @@ class App {
 
 export default function Piano() {
   let elt = useRef<HTMLCanvasElement>(null)
-  const [octave, setOctave] = useState('Normal')
-  const [lastPlayedNote, setLastPlayedNote] = useState<string | null>(null)
+  let keyStatus = useRef<[boolean, boolean]>([false, false])
+  const [octave, setOctave] = useState(0)
 
   useEffect(() => {
     let app = new App()
@@ -158,24 +131,22 @@ export default function Piano() {
         return
       }
 
-      const key = e.key.toLowerCase()
-
-      // Play note if it's a valid piano key
-      if (app.map.has(key)) {
+      setOctave((val) => {
+        let prefix = val === -1 ? '[' : val === 1 ? ']' : ''
+        const key = prefix + e.key.toLowerCase()
         app.onKey(key)
-        setLastPlayedNote(key.toUpperCase())
-      }
+        return val
+      })
 
       // Handle octave controls
       if (e.key === '[') {
-        app.down()
-        setOctave('Low')
-        e.preventDefault()
+        keyStatus.current[0] = true
+        setOctave(-1)
       } else if (e.key === ']') {
-        app.up()
-        setOctave('High')
-        e.preventDefault()
+        keyStatus.current[1] = true
+        setOctave(1)
       }
+      e.preventDefault()
     }
 
     // Handle keyup events at document level
@@ -186,14 +157,22 @@ export default function Piano() {
       }
 
       if (e.key === '[') {
-        app.d2n()
-        setOctave('Normal')
-        e.preventDefault()
+        keyStatus.current[0] = false
       } else if (e.key === ']') {
-        app.u2n()
-        setOctave('Normal')
-        e.preventDefault()
+        keyStatus.current[1] = false
       }
+
+      setOctave((val) => {
+        if (keyStatus.current[0] === false && keyStatus.current[1] === false) {
+          return 0
+        } else if (keyStatus.current[0] && keyStatus.current[1] === false) {
+          return -1
+        } else if (keyStatus.current[1] && keyStatus.current[0] === false) {
+          return 1
+        }
+        return val
+      })
+      e.preventDefault()
     }
 
     // Attach event listeners to document
@@ -345,8 +324,8 @@ export default function Piano() {
             Current Octave:
           </Typography>
           <Chip
-            label={octave}
-            color={octave === 'Low' ? 'info' : octave === 'High' ? 'error' : 'success'}
+            label={octave === -1 ? 'Lower' : octave === 1 ? 'Higher' : 'Normal'}
+            color={octave === -1 ? 'info' : octave === 1 ? 'error' : 'success'}
             icon={<PianoIcon />}
           />
         </Box>
