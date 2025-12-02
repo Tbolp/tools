@@ -3,7 +3,6 @@ import TUpload from "../components/TUpload";
 import { useEffect, useRef, useState } from "react";
 import { Render, RenderBuilder } from "../utils/Render";
 import Markdown from "react-markdown";
-import { TSlider } from "../components/TSlider";
 
 
 function create_kernel(radius: number, sigma: number) {
@@ -43,7 +42,9 @@ export default function Gaussian() {
   let param_ref = useRef([10, 4.5])
   const [hasImage, setHasImage] = useState(false)
   const [originalImage, setOriginalImage] = useState<string | null>(null)
-  
+  const [radius, setRadius] = useState(10)
+  const [sigma, setSigma] = useState(4.5)
+
   return (
     <Container maxWidth="lg" sx={{ mb: '2em', mt: '2em' }}>
       {/* Header Section */}
@@ -52,7 +53,7 @@ export default function Gaussian() {
           Gaussian Blur Filter
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          Apply professional Gaussian blur effect to your images with real-time preview. 
+          Apply professional Gaussian blur effect to your images with real-time preview.
           Adjust the blur radius and intensity to achieve the perfect result.
         </Typography>
         <Alert severity="info" sx={{ mt: 2 }}>
@@ -78,10 +79,10 @@ export default function Gaussian() {
               console.error('Canvas not available')
               return
             }
-            
+
             // Save original image for comparison
             setOriginalImage(img.src)
-            
+
             // Clear existing render context if it exists
             if (render_ref.current) {
               const gl = render_ref.current.context
@@ -92,11 +93,11 @@ export default function Gaussian() {
                 gl.bindTexture(gl.TEXTURE_2D, null)
               }
             }
-            
+
             let c1 = canvas_ref.current
             c1.width = img.width
             c1.height = img.height
-            
+
             let builder = new RenderBuilder()
             let gl = canvas_ref.current.getContext("webgl2", { preserveDrawingBuffer: true })
             if (!gl) {
@@ -107,12 +108,12 @@ export default function Gaussian() {
               console.error('OES_texture_float_linear is not supported')
               return
             }
-            
+
             // Clear the canvas
             gl.viewport(0, 0, img.width, img.height)
             gl.clearColor(0, 0, 0, 0)
             gl.clear(gl.COLOR_BUFFER_BIT)
-            
+
             builder.gl = gl
             builder.fs_src = `#version 300 es
             precision mediump float;
@@ -167,48 +168,52 @@ export default function Gaussian() {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Fine-tune the blur effect using the controls below
           </Typography>
-          
+
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" gutterBottom color="text.secondary">
-              Blur Radius (pixels)
+              Blur Radius (pixels): {radius}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem' }}>
               Controls the size of the blur area. Higher values create stronger blur.
             </Typography>
-            <TSlider 
-              text="Radius" 
-              defaultValue={param_ref.current[0]} 
-              min={0} 
-              max={20} 
-              step={1} 
-              onChange={(val) => {
-                param_ref.current[0] = val
+            <Slider
+              value={radius}
+              min={0}
+              max={20}
+              step={1}
+              onChange={(_, val) => {
+                const newRadius = val as number
+                setRadius(newRadius)
+                param_ref.current[0] = newRadius
                 if (render_ref.current) {
                   rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
                 }
-              }} 
+              }}
+              sx={{ flexGrow: 1 }}
             />
           </Box>
 
           <Box>
             <Typography variant="subtitle2" gutterBottom color="text.secondary">
-              Blur Intensity (Sigma)
+              Blur Intensity (Sigma): {sigma.toFixed(1)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem' }}>
               Controls the intensity of the blur effect. Lower values create sharper falloff.
             </Typography>
-            <TSlider 
-              text="Sigma" 
-              defaultValue={param_ref.current[1]} 
-              min={0.1} 
-              max={20} 
-              step={0.1} 
-              onChange={(val) => {
-                param_ref.current[1] = val as number
+            <Slider
+              value={sigma}
+              min={0.1}
+              max={20}
+              step={0.1}
+              onChange={(_, val) => {
+                const newSigma = val as number
+                setSigma(newSigma)
+                param_ref.current[1] = newSigma
                 if (render_ref.current) {
                   rerender(render_ref.current, param_ref.current[0], param_ref.current[1])
                 }
-              }} 
+              }}
+              sx={{ flexGrow: 1 }}
             />
           </Box>
         </Paper>
@@ -222,7 +227,7 @@ export default function Gaussian() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Compare the original image with the blurred result
         </Typography>
-        
+
         <Grid container spacing={3}>
           {/* Original Image */}
           <Grid item xs={12} md={6}>
@@ -230,9 +235,9 @@ export default function Gaussian() {
               <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="primary">
                 Original Image
               </Typography>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: '#f5f5f5',
                 p: 2,
@@ -240,25 +245,25 @@ export default function Gaussian() {
                 border: '2px solid #e0e0e0'
               }}>
                 {originalImage && (
-                  <img 
-                    src={originalImage} 
-                    alt="Original" 
-                    style={{ maxWidth: '100%', height: 'auto', display: 'block' }} 
+                  <img
+                    src={originalImage}
+                    alt="Original"
+                    style={{ maxWidth: '100%', height: 'auto', display: 'block' }}
                   />
                 )}
               </Box>
             </Box>
           </Grid>
-          
+
           {/* Blurred Image */}
           <Grid item xs={12} md={6}>
             <Box>
               <Typography variant="subtitle2" gutterBottom fontWeight="bold" color="primary">
                 Blurred Result
               </Typography>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: '#f5f5f5',
                 p: 2,
@@ -285,8 +290,3 @@ export default function Gaussian() {
     </Container>
   )
 }
-
-let desp = `
-# Gaussian Blur Filter
-- Radius: Blur radius in pixels
-- Sigma: Blur intensity factor`
