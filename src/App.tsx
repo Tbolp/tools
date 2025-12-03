@@ -14,6 +14,7 @@ const Gaussian = lazy(() => import('./views/Gaussian'))
 const ImageEffect = lazy(() => import('./views/ImageEffect'))
 const Piano = lazy(() => import('./views/Piano'))
 const Home = lazy(() => import('./views/Home'))
+const Cycloid = lazy(() => import('./views/Cycloid'))
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path='mandelbrot' Component={Mandelbrot} />
               <Route path='gaussian' Component={Gaussian} />
               <Route path='imageeffect' Component={ImageEffect} />
+              <Route path='cycloid' Component={Cycloid} />
             </Route>
           </Routes>
         </Suspense>
