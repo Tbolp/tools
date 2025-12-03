@@ -20,6 +20,7 @@ class App {
     let ctx = this._elt.getContext('2d')!
     ctx.translate(this._elt.width * 0.5, this._elt.height * 0.5)
     ctx.scale(unit, -unit)
+    ctx.save()
     this._ctx = ctx
     this._cur = _.cloneDeep(points[0])
     for (let pt of this._points) {
@@ -56,6 +57,7 @@ class App {
     let preAngle = this._angle
     this._angle += realLen / this._radius
 
+    this._ctx.restore()
     this._ctx.strokeStyle = 'blue'
     this._ctx.lineWidth = 0.01
     this._ctx.beginPath()
@@ -83,15 +85,7 @@ export default function Cycloid() {
         app.run()
         requestAnimationFrame(callback)
       }
-      // requestAnimationFrame(callback)
-
-      setTimeout(() => {
-        let ctx = elt.current?.getContext('2d')!
-        ctx.clearRect(0, 0, 100, 100)
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0, 0, 100, 100)
-        // app.run()
-      }, 100)
+      requestAnimationFrame(callback)
     }
     return () => {
       needStop = true
