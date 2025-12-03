@@ -71,7 +71,7 @@ export default function Home() {
       color: '#c2185b',
     },
     {
-      id: 'pinao',
+      id: 'piano',
       name: 'Piano',
       description: 'Virtual piano instrument',
       details: 'An interactive virtual piano with multiple octaves, sound synthesis, and recording features.',

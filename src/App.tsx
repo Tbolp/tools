@@ -24,7 +24,7 @@ function App() {
             <Route path={process.env.PUBLIC_URL} >
               <Route index Component={Home} />
               <Route path='julia' Component={Julia} />
-              <Route path='pinao' Component={Piano} />
+              <Route path='piano' Component={Piano} />
               <Route path='cheese' Component={Cheese} />
               <Route path='player' Component={Player} />
               <Route path='viewer' Component={Viewer} />
