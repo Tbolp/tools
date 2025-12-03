@@ -18,17 +18,19 @@ class App {
   constructor(private points: Point[], private _radius: number, private _elt: HTMLCanvasElement, unit: number) {
     this._points = _.cloneDeep(points);
     let ctx = this._elt.getContext('2d')!
+    ctx.resetTransform()
     ctx.translate(this._elt.width * 0.5, this._elt.height * 0.5)
     ctx.scale(unit, -unit)
-    ctx.save()
     this._ctx = ctx
     this._cur = _.cloneDeep(points[0])
+    console.log(_elt, this._ctx.getTransform())
     for (let pt of this._points) {
       this._ctx.fillStyle = '#ff0000'
       this._ctx.beginPath()
       this._ctx.ellipse(pt.x, pt.y, 0.05, 0.05, 0, 0, Math.PI * 2)
       this._ctx.fill()
     }
+
   }
 
   run() {
@@ -57,7 +59,6 @@ class App {
     let preAngle = this._angle
     this._angle += realLen / this._radius
 
-    this._ctx.restore()
     this._ctx.strokeStyle = 'blue'
     this._ctx.lineWidth = 0.01
     this._ctx.beginPath()
