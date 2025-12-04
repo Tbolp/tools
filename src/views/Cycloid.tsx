@@ -9,11 +9,11 @@ interface Point {
 
 class App {
   private _points: Point[] = []
-  private _vec = 1
+  private _vec = 1.5
   private _ctx: CanvasRenderingContext2D
   private _start = 0
   private _cur: Point = { x: 0, y: 0 }
-  private _angle = 0
+  private _angle = Math.PI * 0.5
 
   constructor(private points: Point[], private _radius: number, private _elt: HTMLCanvasElement, unit: number) {
     this._points = _.cloneDeep(points);
@@ -21,9 +21,9 @@ class App {
     ctx.resetTransform()
     ctx.translate(this._elt.width * 0.5, this._elt.height * 0.5)
     ctx.scale(unit, -unit)
+    ctx.lineWidth = 1 / unit
     this._ctx = ctx
     this._cur = _.cloneDeep(points[0])
-    console.log(_elt, this._ctx.getTransform())
     for (let pt of this._points) {
       this._ctx.fillStyle = '#ff0000'
       this._ctx.beginPath()
@@ -33,34 +33,45 @@ class App {
 
   }
 
+  private norm2(p1: Point, p2: Point): number {
+    return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
+  }
+
   run() {
     let pre = _.cloneDeep(this._cur)
     const interval = 30 / 1000
     const next = (this._start + 1) % this._points.length
-    const len1 = interval * this._vec
-    let x = this._points[next].x - this._points[this._start].x
-    let y = this._points[next].y - this._points[this._start].y
-    x = x / Math.sqrt(x * x + y * y)
-    y = y / Math.sqrt(x * x + y * y)
-    let nx = this._cur.x + len1 * x
-    let ny = this._cur.y + len1 * y
-    let len2 = (this._points[next].x - this._cur.x) * (this._points[next].x - this._cur.x) + (this._points[next].y - this._cur.y) * (this._points[next].y - this._cur.y)
-    let realLen = 0
-    if (len2 > len1) {
-      realLen = len1
+    let len = interval * this._vec
+    let ux = this._points[next].x - this._points[this._start].x
+    let uy = this._points[next].y - this._points[this._start].y
+    let l = Math.sqrt(ux * ux + uy * uy)
+    // let ux = this._points[next].x - this._cur.x
+    // let uy = this._points[next].y - this._cur.y
+    ux = ux / l
+    uy = uy / l
+    let nx = this._cur.x + len * ux
+    let ny = this._cur.y + len * uy
+    const l1 = this.norm2(this._points[this._start], this._points[next])
+    const l2 = this.norm2({
+      x: nx,
+      y: ny
+    }, this._points[this._start])
+    if (l1 > l2) {
       this._cur.x = nx
       this._cur.y = ny
     } else {
-      realLen = len2
+      len = Math.sqrt(
+        (this._points[next].x - this._cur.x) * (this._points[next].x - this._cur.x) +
+        (this._points[next].y - this._cur.y) * (this._points[next].y - this._cur.y)
+      )
       this._cur.x = this._points[next].x
       this._cur.y = this._points[next].y
       this._start = next
     }
     let preAngle = this._angle
-    this._angle += realLen / this._radius
+    this._angle += len / this._radius
 
     this._ctx.strokeStyle = 'blue'
-    this._ctx.lineWidth = 0.01
     this._ctx.beginPath()
     this._ctx.moveTo(pre.x + this._radius * Math.cos(preAngle), pre.y + this._radius * Math.sin(preAngle))
     this._ctx.lineTo(this._cur.x + this._radius * Math.cos(this._angle), this._cur.y + this._radius * Math.sin(this._angle))
@@ -75,7 +86,13 @@ export default function Cycloid() {
   useEffect(() => {
     let needStop = false
     if (elt.current) {
-      let app = new App([{ x: 0, y: 0 }, { x: 0, y: 1 }], 0.3, elt.current, 100)
+      let pts = []
+      for (let i = 0; i < 360; i++) {
+        let angle = (i / 360) * Math.PI
+        pts.push({ x: Math.cos(angle) * 3, y: Math.sin(angle) * 3 })
+      }
+      let app = new App(pts, 0.3, elt.current, 100)
+      // let app = new App([{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 2 }], 0.3, elt.current, 100)
       // for (let i = 0; i < 1; i++) {
       //   app.run()
       // }
@@ -94,7 +111,7 @@ export default function Cycloid() {
   }, [])
   return (
     <Container>
-      <canvas width={500} height={500} style={{ backgroundColor: 'gray' }} ref={elt}></canvas>
+      <canvas width={1000} height={1000} style={{ backgroundColor: 'gray' }} ref={elt}></canvas>
     </Container>
   )
 }
