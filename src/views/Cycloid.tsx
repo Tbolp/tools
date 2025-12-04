@@ -1,6 +1,7 @@
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import _ from "lodash";
 import { useEffect, useRef } from "react";
+import { TDesp, THeader, TSection } from "../components/THeader";
 
 interface Point {
   x: number;
@@ -13,9 +14,8 @@ class App {
   private _ctx: CanvasRenderingContext2D
   private _start = 0
   private _cur: Point = { x: 0, y: 0 }
-  private _angle = Math.PI * 0.5
 
-  constructor(private points: Point[], private _radius: number, private _elt: HTMLCanvasElement, unit: number) {
+  constructor(private points: Point[], private _radius: number, private _elt: HTMLCanvasElement, unit: number, private _angle = 0) {
     this._points = _.cloneDeep(points);
     let ctx = this._elt.getContext('2d')!
     ctx.resetTransform()
@@ -24,11 +24,17 @@ class App {
     ctx.lineWidth = 1 / unit
     this._ctx = ctx
     this._cur = _.cloneDeep(points[0])
-    for (let pt of this._points) {
+    for (let i = 0; i < this._points.length; i++) {
+      let pt = this._points[i]
+      let pt2 = this._points[(i + 1) % this._points.length]
       this._ctx.fillStyle = '#ff0000'
+      this._ctx.strokeStyle = '#e45757ff'
       this._ctx.beginPath()
-      this._ctx.ellipse(pt.x, pt.y, 0.05, 0.05, 0, 0, Math.PI * 2)
-      this._ctx.fill()
+      this._ctx.moveTo(pt.x, pt.y)
+      this._ctx.lineTo(pt2.x, pt2.y)
+      this._ctx.stroke()
+      // this._ctx.ellipse(pt.x, pt.y, 0.05, 0.05, 0, 0, Math.PI * 2)
+      // this._ctx.fill()
     }
 
   }
@@ -71,7 +77,7 @@ class App {
     let preAngle = this._angle
     this._angle += len / this._radius
 
-    this._ctx.strokeStyle = 'blue'
+    this._ctx.strokeStyle = '#216cc8ff'
     this._ctx.beginPath()
     this._ctx.moveTo(pre.x + this._radius * Math.cos(preAngle), pre.y + this._radius * Math.sin(preAngle))
     this._ctx.lineTo(this._cur.x + this._radius * Math.cos(this._angle), this._cur.y + this._radius * Math.sin(this._angle))
@@ -87,9 +93,9 @@ export default function Cycloid() {
     let needStop = false
     if (elt.current) {
       let pts = []
-      for (let i = 0; i < 360; i++) {
-        let angle = (i / 360) * Math.PI
-        pts.push({ x: Math.cos(angle) * 3, y: Math.sin(angle) * 3 })
+      for (let i = 0; i < 3; i++) {
+        let angle = (i / 3) * Math.PI * 2
+        pts.push({ x: Math.cos(angle) * Math.PI, y: Math.sin(angle) * Math.PI })
       }
       let app = new App(pts, 0.3, elt.current, 100)
       // let app = new App([{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 2 }], 0.3, elt.current, 100)
@@ -111,7 +117,20 @@ export default function Cycloid() {
   }, [])
   return (
     <Container>
-      <canvas width={1000} height={1000} style={{ backgroundColor: 'gray' }} ref={elt}></canvas>
+      <THeader title="Cycloid" desp="" tips="" />
+      <TSection
+        title=""
+        desp="">
+        <TDesp>
+          fdsf
+        </TDesp>
+
+        <canvas width={1000} height={1000} style={{
+        }} ref={elt}></canvas>
+
+
+      </TSection>
+
     </Container>
   )
 }

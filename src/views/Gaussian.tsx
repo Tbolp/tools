@@ -3,6 +3,7 @@ import TUpload from "../components/TUpload";
 import { useEffect, useRef, useState } from "react";
 import { Render, RenderBuilder } from "../utils/Render";
 import Markdown from "react-markdown";
+import { THeader, TSection } from "../components/THeader";
 
 
 function create_kernel(radius: number, sigma: number) {
@@ -48,27 +49,17 @@ export default function Gaussian() {
   return (
     <Container maxWidth="lg" sx={{ mb: '2em', mt: '2em' }}>
       {/* Header Section */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold" color="primary">
-          Gaussian Blur Filter
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          Apply professional Gaussian blur effect to your images with real-time preview.
-          Adjust the blur radius and intensity to achieve the perfect result.
-        </Typography>
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <strong>How to use:</strong> Upload an image below, then adjust the Radius and Sigma sliders to control the blur effect.
-        </Alert>
-      </Paper>
+      <THeader
+        title="Gaussian Blur Filter"
+        desp="Apply professional Gaussian blur effect to your images with real-time preview.
+          Adjust the blur radius and intensity to achieve the perfect result."
+        tips="Upload an image below, then adjust the Radius and Sigma sliders to control the blur effect."
+      />
 
       {/* Upload Section */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom fontWeight="bold">
-          1. Upload Image
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Select an image file to apply Gaussian blur
-        </Typography>
+      <TSection
+        title="1. Upload Image"
+        desp="Select an image file to apply Gaussian blur">
         <TUpload onFile={async (file) => {
           let blob = new Blob([await file.arrayBuffer()], {
             type: file.type
@@ -157,7 +148,7 @@ export default function Gaussian() {
           }
           img.src = URL.createObjectURL(blob)
         }} />
-      </Paper>
+      </TSection>
 
       {/* Controls Section */}
       {hasImage && (
